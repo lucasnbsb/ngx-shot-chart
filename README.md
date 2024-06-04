@@ -1,27 +1,35 @@
-# LucasWorkspace
+# NgxShotChart 🏀
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.7.
+A simple way to create shotcharts in real time with Angular and d3.js.
 
-## Development server
+## Basic functionality
+This lib exposes a `ShotChartComponent` that renders a shot chart and a `ShotChartService` with primitives to manipulate symbols in the chart.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Code scaffolding
+## The component
+- Only emmits the mutually esclusive  `ChartClicked` and `SymbolClicked` events 
+- Symbols can be any [d3.symbolType](https://d3js.org/d3-shape/symbol#symbolsFill)
+- Court and symbols default fill collor is the current text color
+- ⛹️ Pre-configured with NBA, FIBA and NCAA court sizes
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## The service
 
-## Build
+Exposes a crud interface for shots, methods to draw and clear the court and symbols, and utilities.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Usage:
 
-## Running unit tests
+```typescript
+import { ShotChartService } from 'ngx-shot-chart';
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+constructor(private shotChartService: ShotChartService) {}
 
-## Running end-to-end tests
+// Add a shot to the chart whenever it is clicked 🪣
+handleChartClick(event: ChartClickedEvent) {
+  this.chart.AddShot(event, d3.symbolCircle);
+}
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+// Remove a shot from the chart whenever the symbol is clicked 🗑️
+handleSymbolClick(event: SymbolClickEvent) {
+  this.chart.RemoveShot(event.id);
+}
+```

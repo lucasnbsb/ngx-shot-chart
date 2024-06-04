@@ -9,6 +9,11 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
+    "paths": {
+      "ngx-shot-chart": [
+        "./dist/ngx-shot-chart"
+      ]
+    },
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,

@@ -1,0 +1,29 @@
+/* shotchart */
+.ngx-shot-chart-court * {
+    fill: transparent;
+    stroke: currentColor;
+    stroke-width: 0.15;
+    stroke-opacity: 1;
+  }
+  
+  .ngx-shot-chart-court {
+    border: none;
+    outline: none;
+  }
+  
+  /* make sure that points don't overlap the hoop */
+  .ngx-shot-chart-court-hoop,
+  .ngx-shot-chart-court-backboard {
+    z-index: 1000;
+  }
+  
+  .ngx-shot-chart-court-baseline,
+  .ngx-shot-chart-court-3pt-line,
+  .ngx-shot-chart-court-restricted-area,
+  .ngx-shot-chart-court-ft-circle-top,
+  .ngx-shot-chart-court-ft-circle-bottom,
+  .ngx-shot-chart-court-key-block,
+  .ngx-shot-chart-court-key-mark {
+    z-index: 0;
+  }
+  
