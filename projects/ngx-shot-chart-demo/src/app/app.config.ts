@@ -1,19 +1,12 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHighlightOptions } from 'ngx-highlightjs';
 
 import { routes } from './app.routes';
+import { EllipsisVertical, Github, Linkedin, LucideAngularModule, Moon, Sun } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHighlightOptions({
-      coreLibraryLoader: () => import('highlight.js/lib/core'),
-      lineNumbersLoader: () => import('ngx-highlightjs/line-numbers'),
-      languages: {
-        typescript: () => import('highlight.js/lib/languages/typescript'),
-        javascript: () => import('highlight.js/lib/languages/javascript'),
-      },
-    }),
+    importProvidersFrom(LucideAngularModule.pick({ Sun, Moon, Linkedin, EllipsisVertical, Github })),
   ],
 };

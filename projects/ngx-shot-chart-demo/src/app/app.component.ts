@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import * as d3 from 'd3';
-import { Highlight } from 'ngx-highlightjs';
-import { HighlightLineNumbers } from 'ngx-highlightjs/line-numbers';
+import { LucideAngularModule } from 'lucide-angular';
 import {
   IChartClickedEvent,
   IShotInfo,
@@ -19,14 +18,15 @@ interface SymbolForm extends ISymbolParameters {}
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NgxShotChartComponent, ReactiveFormsModule, Highlight, HighlightLineNumbers],
+  imports: [CommonModule, RouterOutlet, NgxShotChartComponent, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   providers: [NgxShotChartService],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'ngx-shot-chart-demo';
   lastCode = signal('');
+  theme = localStorage.getItem('theme') ?? 'forest';
   lastShotInfo = signal<any>(undefined);
 
   symbolForm = this.fb.group<SymbolForm>({
@@ -58,6 +58,10 @@ export class AppComponent {
     private fb: FormBuilder,
   ) {}
 
+  ngOnInit(): void {
+    this.switchTheme(this.theme);
+  }
+
   addShot(chartClick: IChartClickedEvent) {
     const sybolParams = this.symbolForm.value as ISymbolParameters;
 
@@ -72,5 +76,11 @@ export class AppComponent {
   clearShots() {
     this.lastCode.set(`this.shotChart.clearChart();`);
     this.shotChart.clearChart();
+  }
+
+  switchTheme(theme: string) {
+    document.getElementsByTagName('html')[0].setAttribute('data-theme', theme);
+    this.theme = theme;
+    localStorage.setItem('theme', theme);
   }
 }
