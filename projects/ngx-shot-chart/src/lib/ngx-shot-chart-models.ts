@@ -3,9 +3,16 @@ export interface ICourtLocation {
   y: number;
 }
 
-export interface IActiveSymbol extends ICourtLocation {
-  uuid: string;
+export interface ISymbolParameters {
   symbol: d3.SymbolType;
+  size?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  fill?: string;
+}
+
+export interface IActiveSymbol extends ICourtLocation, ISymbolParameters {
+  uuid: string;
 }
 
 export interface ILeagueSettings {
@@ -50,18 +57,18 @@ export interface ICourtLines {
   [index: string]: ICourtLocation[];
 }
 
-export interface SymbolClickEvent {
+export interface ISymbolClickEvent {
   event: MouseEvent;
   symbol: SVGPathElement;
   id: string;
 }
 
-export interface ChartClickedEvent {
+export interface IChartClickedEvent {
   event: MouseEvent;
-  shotInfo: ShotInfo;
+  shotInfo: IShotInfo;
 }
 
-export interface ShotInfo {
+export interface IShotInfo {
   x: number;
   y: number;
   distanceFeet: number;
@@ -69,3 +76,5 @@ export interface ShotInfo {
   angleDegrees: number;
   isThreePointer: boolean;
 }
+
+export type NgxShotChartLeague = 'nba' | 'fiba' | 'ncaa';

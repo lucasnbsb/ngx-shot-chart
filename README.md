@@ -3,7 +3,7 @@
 A simple way to create shotcharts in real time with Angular and d3.js.
 
 ## Basic functionality
-This lib exposes a `ShotChartComponent` that renders a shot chart and a `ShotChartService` with primitives to manipulate symbols in the chart.
+This lib exposes a `NgxShotChartComponent` that renders a shot chart and a `NgxShotChartService` with primitives to manipulate symbols in the chart.
 
 
 ## The component
@@ -11,6 +11,11 @@ This lib exposes a `ShotChartComponent` that renders a shot chart and a `ShotCha
 - Symbols can be any [d3.symbolType](https://d3js.org/d3-shape/symbol#symbolsFill)
 - Court and symbols default fill collor is the current text color
 - ⛹️ Pre-configured with NBA, FIBA and NCAA court sizes
+
+### Usage: 
+```typescript
+<ngx-shot-chart league='nba' (ChartClicked)="handleChartClicked($event)" (SymbolClicked)="handleSymbolClicked($event)"></ngx-shot-chart>
+```
 
 ## The service
 

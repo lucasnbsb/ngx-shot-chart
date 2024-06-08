@@ -1,22 +1,24 @@
+import { CommonModule } from '@angular/common';
 import { Injectable, Inject } from '@angular/core';
 import * as d3 from 'd3';
 import { Subject } from 'rxjs';
 import {
-  SymbolClickEvent,
+  ISymbolClickEvent,
   IActiveSymbol,
   IShotchartSettings,
-  ShotInfo,
+  IShotInfo,
   ICourtLocation,
   IDrawCourt,
   ILeagueSettings,
   ICourtLines,
+  ISymbolParameters,
 } from './ngx-shot-chart-models';
 import { NgxShotchartSettings } from './ngx-shot-chart.constants';
 
 @Injectable()
 export class NgxShotChartService {
   /** Observable for all click events in symbols added to the chart*/
-  private symbolClicked$: Subject<SymbolClickEvent> = new Subject();
+  private symbolClicked$: Subject<ISymbolClickEvent> = new Subject();
   public activeSymbols: Map<string, IActiveSymbol> = new Map();
 
   readonly chartSelector = '#ngx-shotchart-svg';
@@ -54,7 +56,7 @@ export class NgxShotChartService {
     size: number,
     stroke: string,
     strokeWidth: number,
-    fill?: string
+    fill?: string,
   ): string {
     const subject = this.symbolClicked$;
     function onClickHandler(this: SVGPathElement, event: MouseEvent) {
@@ -87,29 +89,20 @@ export class NgxShotChartService {
    *
    * @param x The x-coordinate of the shot.
    * @param y The y-coordinate of the shot.
-   * @returns {ShotInfo} The shot information object containing the distance, angle, and other details.
+   * @returns {IShotInfo} The shot information object containing the distance, angle, and other details.
    */
-  calculateShotInfo(x: number, y: number): ShotInfo {
+  calculateShotInfo(x: number, y: number): IShotInfo {
     const hoopCenter = d3.select('#ngx-shot-chart-court-hoop-center');
     const hoopCenterX = parseFloat(hoopCenter.attr('cx'));
     const hoopCenterY = parseFloat(hoopCenter.attr('cy'));
     const distance = this.euclidianDistance(x, y, hoopCenterX, hoopCenterY);
-    const angleDegrees = this.angleBetweenPoints(
-      hoopCenterX,
-      hoopCenterY,
-      x,
-      y
-    );
+    const angleDegrees = this.angleBetweenPoints(hoopCenterX, hoopCenterY, x, y);
 
-    const result: ShotInfo = {
+    const result: IShotInfo = {
       distanceFeet: distance,
       distanceMeters: distance * 0.3048,
       angleDegrees: angleDegrees,
-      isThreePointer: this.isThreePointer(
-        distance,
-        angleDegrees,
-        this.lastRenderedSettings.leagueSettings
-      ),
+      isThreePointer: this.isThreePointer(distance, angleDegrees, this.lastRenderedSettings.leagueSettings),
       x: x,
       y: y,
     };
@@ -125,7 +118,7 @@ export class NgxShotChartService {
       this.drawCourt(settings);
     } else {
       throw new Error(
-        'No chart settings found injected. Please provide a chart settings object thorugh the NGX_SHOT_CHART_SETTINGS token'
+        'No chart settings found injected. Please provide a chart settings object thorugh the NGX_SHOT_CHART_SETTINGS token',
       );
     }
 
@@ -137,9 +130,10 @@ export class NgxShotChartService {
           symbol.symbol,
           symbol.x,
           symbol.y,
-          0.2,
-          'black',
-          0.1
+          symbol.size ?? 0.2,
+          symbol.stroke ?? 'black',
+          symbol.strokeWidth ?? 0.1,
+          symbol.fill ?? 'currentColor',
         );
       });
     }
@@ -149,27 +143,31 @@ export class NgxShotChartService {
    * Adds a shot to the shot chart.
    *
    * @param {MouseEvent | ICourtLocation} coordinates The coordinates of the shot. It can be either a MouseEvent or an object with `x` and `y` properties.
-   * @param {d3.SymbolType} symbol The symbol type for the shot.
    * @param {string} [id] The id of the shot. If not provided, a random uuid will be generated.
+   * @param {ISymbolParameters} [symbolParams] The parameters for the symbol. If not provided, the default parameters will be used.
+   *
+   * @default {symbol: circle, fill: 'currentColor', stroke: 'currentColor', strokeWidth: 0.1, size: 0.2}
    * @returns {string} The id of the added shot.
    */
-  AddShot(
-    coordinates: MouseEvent | ICourtLocation,
-    symbol: d3.SymbolType,
-    id?: string
-  ): string {
+  AddShot(coordinates: MouseEvent | ICourtLocation, id?: string, symbolParams?: ISymbolParameters): string {
     if (!id) {
       id = crypto.randomUUID();
     }
-    const coords =
-      coordinates instanceof MouseEvent
-        ? d3.pointer(coordinates)
-        : [coordinates.x, coordinates.y];
+    // A circle is the default symbol
+    let symbol: d3.SymbolType = d3.symbolCircle;
+    if (symbolParams) {
+      symbol = symbolParams.symbol;
+    }
+    const coords = coordinates instanceof MouseEvent ? d3.pointer(coordinates) : [coordinates.x, coordinates.y];
     this.activeSymbols.set(id, {
       uuid: id,
       x: coords[0],
       y: coords[1],
       symbol: symbol,
+      fill: symbolParams?.fill ?? 'currentColor',
+      stroke: symbolParams?.stroke ?? 'currentColor',
+      strokeWidth: symbolParams?.strokeWidth ?? 0.1,
+      size: symbolParams?.size ?? 0.2,
     });
     this.redrawChart(this.lastRenderedSettings);
     return id;
@@ -203,11 +201,7 @@ export class NgxShotChartService {
    * @param {ICourtLocation} coordinates - The new coordinates of the shot.
    * @param {d3.SymbolType} symbol - The new symbol type for the shot.
    */
-  updateShot(
-    uuid: string,
-    coordinates: ICourtLocation,
-    symbol: d3.SymbolType
-  ): void {
+  updateShot(uuid: string, coordinates: ICourtLocation, symbol: d3.SymbolType): void {
     this.activeSymbols.set(uuid, {
       uuid: uuid,
       x: coordinates.x,
@@ -229,7 +223,7 @@ export class NgxShotChartService {
   drawCourt(settings: IShotchartSettings): IDrawCourt {
     if (!settings) {
       throw new Error(
-        'No chart settings found injected. Please provide a chart settings object thorugh the NGX_SHOT_CHART_SETTINGS token'
+        'No chart settings found injected. Please provide a chart settings object thorugh the NGX_SHOT_CHART_SETTINGS token',
       );
     }
     this.lastRenderedSettings = settings;
@@ -241,15 +235,13 @@ export class NgxShotChartService {
       rimXY: [],
     };
 
+    document.getElementsByClassName('ngx-shot-chart-court').item(0)?.remove();
     // Set the viewbox for the chart.
     const baseElement = d3
       .select(this.chartSelector)
       .attr('width', settings.width)
       // min-x min-y width height
-      .attr(
-        'viewBox',
-        `0 0 ${settings.leagueSettings.courtWidth} ${settings.visibleCourtLength}`
-      )
+      .attr('viewBox', `0 0 ${settings.leagueSettings.courtWidth} ${settings.visibleCourtLength}`)
       .append('g')
       .attr('class', 'ngx-shot-chart-court');
 
@@ -257,11 +249,7 @@ export class NgxShotChartService {
     baseElement
       .append('rect')
       .attr('class', 'ngx-shot-chart-court-key')
-      .attr(
-        'x',
-        settings.leagueSettings.courtWidth / 2 -
-          settings.leagueSettings.keyWidth / 2
-      )
+      .attr('x', settings.leagueSettings.courtWidth / 2 - settings.leagueSettings.keyWidth / 2)
       .attr('y', settings.visibleCourtLength - settings.freeThrowLineLength)
       .attr('width', settings.leagueSettings.keyWidth)
       .attr('height', settings.freeThrowLineLength);
@@ -280,7 +268,7 @@ export class NgxShotChartService {
       settings.leagueSettings.threePointSideDistance /
         (settings.leagueSettings.threePointCutOffLength -
           settings.basketProtrusionLength -
-          settings.basketDiameter / 2)
+          settings.basketDiameter / 2),
     );
 
     // Three point arc.
@@ -290,11 +278,9 @@ export class NgxShotChartService {
       -1 * tpAngle,
       tpAngle,
       settings.leagueSettings.courtWidth / 2,
-      settings.visibleCourtLength -
-        settings.basketProtrusionLength -
-        settings.basketDiameter / 2,
+      settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2,
       'threePointLineXY',
-      courtLines
+      courtLines,
     )
       .attr('class', this.threePointLineClass)
       .attr(
@@ -302,10 +288,8 @@ export class NgxShotChartService {
         'translate(' +
           settings.leagueSettings.courtWidth / 2 +
           ', ' +
-          (settings.visibleCourtLength -
-            settings.basketProtrusionLength -
-            settings.basketDiameter / 2) +
-          ')'
+          (settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2) +
+          ')',
       );
 
     // Corners of the three point line
@@ -313,21 +297,9 @@ export class NgxShotChartService {
       baseElement
         .append('line')
         .attr('class', 'ngx-shot-chart-court-3pt-line')
-        .attr(
-          'x1',
-          settings.leagueSettings.courtWidth / 2 +
-            settings.leagueSettings.threePointSideDistance * n
-        )
-        .attr(
-          'y1',
-          settings.visibleCourtLength -
-            settings.leagueSettings.threePointCutOffLength
-        )
-        .attr(
-          'x2',
-          settings.leagueSettings.courtWidth / 2 +
-            settings.leagueSettings.threePointSideDistance * n
-        )
+        .attr('x1', settings.leagueSettings.courtWidth / 2 + settings.leagueSettings.threePointSideDistance * n)
+        .attr('y1', settings.visibleCourtLength - settings.leagueSettings.threePointCutOffLength)
+        .attr('x2', settings.leagueSettings.courtWidth / 2 + settings.leagueSettings.threePointSideDistance * n)
         .attr('y2', settings.visibleCourtLength);
     });
 
@@ -338,11 +310,9 @@ export class NgxShotChartService {
       (-1 * Math.PI) / 2,
       Math.PI / 2,
       settings.leagueSettings.courtWidth / 2,
-      settings.visibleCourtLength -
-        settings.basketProtrusionLength -
-        settings.basketDiameter / 2,
+      settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2,
       'restrictedAreaXY',
-      courtLines
+      courtLines,
     )
       .attr('class', 'ngx-shot-chart-court-restricted-area')
       .attr(
@@ -350,10 +320,8 @@ export class NgxShotChartService {
         'translate(' +
           settings.leagueSettings.courtWidth / 2 +
           ', ' +
-          (settings.visibleCourtLength -
-            settings.basketProtrusionLength -
-            settings.basketDiameter / 2) +
-          ')'
+          (settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2) +
+          ')',
       );
 
     // Free throw circle
@@ -365,7 +333,7 @@ export class NgxShotChartService {
       settings.leagueSettings.courtWidth / 2,
       settings.visibleCourtLength - settings.freeThrowLineLength,
       'ftOutXY',
-      courtLines
+      courtLines,
     )
       .attr('class', 'ngx-shot-chart-court-ft-circle-top')
       .attr(
@@ -374,16 +342,11 @@ export class NgxShotChartService {
           settings.leagueSettings.courtWidth / 2 +
           ', ' +
           (settings.visibleCourtLength - settings.freeThrowLineLength) +
-          ')'
+          ')',
       );
 
     if (settings.leagueSettings.leagueId == 'nba') {
-      this.appendArcPath(
-        baseElement,
-        settings.freeThrowCircleRadius,
-        Math.PI / 2,
-        1.5 * Math.PI
-      )
+      this.appendArcPath(baseElement, settings.freeThrowCircleRadius, Math.PI / 2, 1.5 * Math.PI)
         .attr('class', 'ngx-shot-chart-court-ft-circle-bottom')
         .attr(
           'transform',
@@ -391,19 +354,14 @@ export class NgxShotChartService {
             settings.leagueSettings.courtWidth / 2 +
             ', ' +
             (settings.visibleCourtLength - settings.freeThrowLineLength) +
-            ')'
+            ')',
         );
     } else if (settings.leagueSettings.leagueId == 'coll') {
       // Draw the paint area for college ball
       baseElement
         .append('rect')
         .attr('class', 'ngx-shot-chart-court-key-block')
-        .attr(
-          'x',
-          settings.leagueSettings.courtWidth / 2 -
-            settings.leagueSettings.keyWidth / 2 -
-            0.66
-        )
+        .attr('x', settings.leagueSettings.courtWidth / 2 - settings.leagueSettings.keyWidth / 2 - 0.66)
         .attr('y', settings.visibleCourtLength - 7)
         .attr('width', 0.66)
         .attr('height', 1)
@@ -412,11 +370,7 @@ export class NgxShotChartService {
       baseElement
         .append('rect')
         .attr('class', 'ngx-shot-chart-court-key-block')
-        .attr(
-          'x',
-          settings.leagueSettings.courtWidth / 2 +
-            settings.leagueSettings.keyWidth / 2
-        )
+        .attr('x', settings.leagueSettings.courtWidth / 2 + settings.leagueSettings.keyWidth / 2)
         .attr('y', settings.visibleCourtLength - 7)
         .attr('width', 0.66)
         .attr('height', 1)
@@ -433,14 +387,10 @@ export class NgxShotChartService {
             'x1',
             settings.leagueSettings.courtWidth / 2 +
               (settings.leagueSettings.keyWidth / 2) * n +
-              settings.keyMarkWidth * n
+              settings.keyMarkWidth * n,
           )
           .attr('y1', settings.visibleCourtLength - mark)
-          .attr(
-            'x2',
-            settings.leagueSettings.courtWidth / 2 +
-              (settings.leagueSettings.keyWidth / 2) * n
-          )
+          .attr('x2', settings.leagueSettings.courtWidth / 2 + (settings.leagueSettings.keyWidth / 2) * n)
           .attr('y2', settings.visibleCourtLength - mark);
       });
     });
@@ -449,31 +399,17 @@ export class NgxShotChartService {
     baseElement
       .append('line')
       .attr('class', 'ngx-shot-chart-court-backboard')
-      .attr(
-        'x1',
-        settings.leagueSettings.courtWidth / 2 - settings.basketWidth / 2
-      )
+      .attr('x1', settings.leagueSettings.courtWidth / 2 - settings.basketWidth / 2)
       .attr('y1', settings.visibleCourtLength - settings.basketProtrusionLength)
-      .attr(
-        'x2',
-        settings.leagueSettings.courtWidth / 2 + settings.basketWidth / 2
-      )
-      .attr(
-        'y2',
-        settings.visibleCourtLength - settings.basketProtrusionLength
-      );
+      .attr('x2', settings.leagueSettings.courtWidth / 2 + settings.basketWidth / 2)
+      .attr('y2', settings.visibleCourtLength - settings.basketProtrusionLength);
 
     // Hoop
     baseElement
       .append('circle')
       .attr('class', 'ngx-shot-chart-court-hoop')
       .attr('cx', settings.leagueSettings.courtWidth / 2)
-      .attr(
-        'cy',
-        settings.visibleCourtLength -
-          settings.basketProtrusionLength -
-          settings.basketDiameter / 2
-      )
+      .attr('cy', settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2)
       .attr('r', settings.basketDiameter / 2);
 
     // invisible point at the center of the hoop for calculating distances
@@ -481,12 +417,7 @@ export class NgxShotChartService {
       .append('circle')
       .attr('id', 'ngx-shot-chart-court-hoop-center')
       .attr('cx', settings.leagueSettings.courtWidth / 2)
-      .attr(
-        'cy',
-        settings.visibleCourtLength -
-          settings.basketProtrusionLength -
-          settings.basketDiameter / 2
-      )
+      .attr('cy', settings.visibleCourtLength - settings.basketProtrusionLength - settings.basketDiameter / 2)
       .attr('r', 0);
 
     return { baseElement: baseElement, courtLines };
@@ -494,15 +425,10 @@ export class NgxShotChartService {
 
   /** Calculates if a shot is worth 3 points or 2*/
   // heavy elementary school math ahead
-  private isThreePointer(
-    distance: number,
-    angle: number,
-    leagueSettings: ILeagueSettings
-  ) {
+  private isThreePointer(distance: number, angle: number, leagueSettings: ILeagueSettings) {
     const threePointArcAngles = leagueSettings.threePointArcAngles;
     const threePointArcDistance = leagueSettings.threePointRadius;
-    const isInTheArc =
-      angle > threePointArcAngles[0] && angle < threePointArcAngles[1];
+    const isInTheArc = angle > threePointArcAngles[0] && angle < threePointArcAngles[1];
 
     if (isInTheArc) {
       return Math.abs(distance) > Math.abs(threePointArcDistance);
@@ -524,12 +450,7 @@ export class NgxShotChartService {
   }
 
   // more elementary school math
-  private euclidianDistance(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number
-  ): number {
+  private euclidianDistance(x1: number, y1: number, x2: number, y2: number): number {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
   }
 
@@ -562,7 +483,7 @@ export class NgxShotChartService {
     translateX?: number,
     translateY?: number,
     xyState?: string,
-    courtLines?: ICourtLines
+    courtLines?: ICourtLines,
   ): any {
     // amount of line segments for the arc
     const points = 1500;
@@ -578,12 +499,8 @@ export class NgxShotChartService {
       .radius(radius)
       .angle(function (d: [number, number], i: number) {
         temp.push({
-          x:
-            (translateX === undefined ? 0 : translateX) +
-            radius * Math.cos(a(i) - Math.PI / 2),
-          y:
-            (translateY === undefined ? 0 : translateY) +
-            radius * Math.sin(a(i) - Math.PI / 2),
+          x: (translateX === undefined ? 0 : translateX) + radius * Math.cos(a(i) - Math.PI / 2),
+          y: (translateY === undefined ? 0 : translateY) + radius * Math.sin(a(i) - Math.PI / 2),
         });
         return a(i);
       });

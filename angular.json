@@ -28,10 +28,80 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "projects/ngx-shot-chart/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "ngx-shot-chart-demo": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/ngx-shot-chart-demo",
+      "sourceRoot": "projects/ngx-shot-chart-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/ngx-shot-chart-demo",
+            "index": "projects/ngx-shot-chart-demo/src/index.html",
+            "browser": "projects/ngx-shot-chart-demo/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "projects/ngx-shot-chart-demo/tsconfig.app.json",
+            "assets": ["projects/ngx-shot-chart-demo/src/favicon.ico", "projects/ngx-shot-chart-demo/src/assets"],
+            "styles": ["projects/ngx-shot-chart-demo/src/styles.css"],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "ngx-shot-chart-demo:build:production"
+            },
+            "development": {
+              "buildTarget": "ngx-shot-chart-demo:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "ngx-shot-chart-demo:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "projects/ngx-shot-chart-demo/tsconfig.spec.json",
+            "assets": ["projects/ngx-shot-chart-demo/src/favicon.ico", "projects/ngx-shot-chart-demo/src/assets"],
+            "styles": ["projects/ngx-shot-chart-demo/src/styles.css"],
+            "scripts": []
           }
         }
       }
