@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./ngx-shot-chart-demo/src/**/*.{html,ts}'],
+  content: ['./ngx-shot-chart-demo/src/**/*.{html,ts}', './projects/ngx-shot-chart-demo/src/**/*.{html,ts}'],
   theme: {
     extend: {},
   },
