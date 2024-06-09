@@ -5,28 +5,54 @@
     </div>
     <div class="flex-none">
       <div class="dropdown dropdown-end dropdown-bottom">
-        <div tabindex="0" role="button" class="btn btn-ghost">
+        <div tabindex="0" role="button" class="btn btn-ghost" aria-label="menu">
           <lucide-icon name="ellipsis-vertical"></lucide-icon>
         </div>
         <ul tabindex="0" class="menu dropdown-content z-[1] w-52 rounded-box bg-base-300 p-2 shadow">
           <li>
             @if (theme === 'lemonade') {
-              <button class="btn" (click)="switchTheme('dark'); $event.stopImmediatePropagation()">
+              <button
+                id="darkModeButton"
+                class="btn"
+                (click)="switchTheme('dark'); $event.stopImmediatePropagation()"
+                role="menuitem"
+                aria-label="Switch to dark mode"
+              >
                 <lucide-icon name="moon"></lucide-icon>
               </button>
             } @else {
-              <button class="btn" (click)="switchTheme('lemonade')">
+              <button
+                id="lightModeButton"
+                class="btn"
+                (click)="switchTheme('lemonade')"
+                role="menuitem"
+                aria-label="Switch to light mode"
+              >
                 <lucide-icon name="sun"></lucide-icon>
               </button>
             }
           </li>
           <li>
-            <a class="btn" href="https://www.linkedin.com/in/lucas-neto-moreira/" target="_blank">
+            <a
+              class="btn"
+              href="https://www.linkedin.com/in/lucas-neto-moreira/"
+              target="_blank"
+              role="menuitem"
+              id="linkedinButton"
+              aria-label="Maintainer's Linkedin page"
+            >
               <lucide-icon name="linkedin"></lucide-icon>
             </a>
           </li>
           <li>
-            <a class="btn" href="https://github.com/lucasnbsb/ngx-shot-chart" target="_blank">
+            <a
+              class="btn"
+              href="https://github.com/lucasnbsb/ngx-shot-chart"
+              target="_blank"
+              role="menuitem"
+              id="githubButton"
+              aria-label="Project's github page"
+            >
               <lucide-icon name="github"></lucide-icon>
             </a>
           </li>
@@ -42,10 +68,10 @@
   <form [formGroup]="symbolForm" class="grid grid-cols-2 gap-5 p-2">
     <label class="form-control col-span-1">
       <div>
-        <div class="label">
+        <div class="label" for="symbolSelect">
           <span>Symbol</span>
         </div>
-        <select class="select select-bordered w-full max-w-xs" formControlName="symbol">
+        <select class="select select-bordered w-full max-w-xs" formControlName="symbol" id="symbolSelect">
           @for (symbol of d3Symbols; track $index) {
             <option [ngValue]="symbol.value">{{ symbol.name }}</option>
           }
@@ -65,27 +91,36 @@
     </form>
 
     <div>
-      <label for="sizeInput">Size: {{ symbolForm.value.size | number: '1.1-1' }}</label>
+      <label for="sizeRangeInput">Size: {{ symbolForm.value.size | number: '1.1-1' }}</label>
       <div class="flex flex-row gap-2">
-        <input id="sizeInput" type="range" min="0" max="1" step="0.1" class="range" formControlName="size" />
+        <input id="sizeRangeInput" type="range" min="0" max="1" step="0.1" class="range" formControlName="size" />
       </div>
     </div>
 
     <div>
-      <label for="sizeInput">Stroke Width: {{ symbolForm.value.strokeWidth | number: '1.1-1' }}</label>
+      <label for="strokeWitdhRangeInput">Stroke Width: {{ symbolForm.value.strokeWidth | number: '1.1-1' }}</label>
       <div class="flex flex-row gap-2">
-        <input id="sizeInput" type="range" min="0" max="1" step="0.1" class="range" formControlName="strokeWidth" />
+        <input
+          id="strokeWitdhRangeInput"
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          class="range"
+          formControlName="strokeWidth"
+          aria-labelledby=""
+        />
       </div>
     </div>
 
     <div class="flex items-center gap-2">
-      <label>Stroke color</label>
-      <input id="stroke" type="color" formControlName="stroke" />
+      <label for="strokeColorInput">Stroke color</label>
+      <input id="strokeColorInput" type="color" formControlName="stroke" />
     </div>
 
     <div class="flex items-center gap-2">
-      <label>Fill color</label>
-      <input id="stroke" type="color" formControlName="fill" />
+      <label for="fillColorInput">Fill color</label>
+      <input id="fillColorInput" type="color" formControlName="fill" />
     </div>
   </form>
 
