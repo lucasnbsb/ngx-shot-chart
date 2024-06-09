@@ -4,6 +4,11 @@ A simple way to create shotcharts in real time with Angular and d3.js.
 
 [Try it out in the demo app!](https://lucasnbsb.github.io/ngx-shot-chart/)
 
+## Installation
+```
+npm install ngx-shot-chart d3 @types/d3
+```
+
 ## Basic functionality
 This lib exposes a `NgxShotChartComponent` that renders a shot chart and a `NgxShotChartService` with primitives to manipulate symbols in the chart.
 

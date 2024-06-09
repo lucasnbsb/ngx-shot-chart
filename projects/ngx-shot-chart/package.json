@@ -1,8 +1,9 @@
 {
-  "version": "0.0.4",
+  "version": "0.0.5",
   "name": "ngx-shot-chart",
   "description": "An Angular component to create basketball shot charts in real time",
-  "homepage": "https://lucasnbsb.github.io/ngx-shot-chart/",
+  "homepage": "https://github.com/lucasnbsb/ngx-shot-chart",
+  "repository": "https://github.com/lucasnbsb/ngx-shot-chart",
   "author": {
     "name": "Lucas Neto",
     "email": "lucasnbsb@gmail.com",
