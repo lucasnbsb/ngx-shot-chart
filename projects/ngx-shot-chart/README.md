@@ -1,24 +1,42 @@
-# NgxShotChart
+# NgxShotChart 🏀
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.0.
+A simple way to create shotcharts in real time with Angular and d3.js.
 
-## Code scaffolding
+[Try it out in the demo app!](https://lucasnbsb.github.io/ngx-shot-chart/)
 
-Run `ng generate component component-name --project ngx-shot-chart` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ngx-shot-chart`.
-> Note: Don't forget to add `--project ngx-shot-chart` or else it will be added to the default project in your `angular.json` file. 
+## Basic functionality
+This lib exposes a `NgxShotChartComponent` that renders a shot chart and a `NgxShotChartService` with primitives to manipulate symbols in the chart.
 
-## Build
 
-Run `ng build ngx-shot-chart` to build the project. The build artifacts will be stored in the `dist/` directory.
+## The component
+- Only emmits the mutually esclusive  `ChartClicked` and `SymbolClicked` events 
+- Symbols can be any [d3.symbolType](https://d3js.org/d3-shape/symbol#symbolsFill)
+- Court and symbols default fill collor is the current text color
+- ⛹️ Pre-configured with NBA, FIBA and NCAA court sizes
 
-## Publishing
+### Usage: 
+```typescript
+<ngx-shot-chart league='nba' (ChartClicked)="handleChartClicked($event)" (SymbolClicked)="handleSymbolClicked($event)"></ngx-shot-chart>
+```
 
-After building your library with `ng build ngx-shot-chart`, go to the dist folder `cd dist/ngx-shot-chart` and run `npm publish`.
+## The service
 
-## Running unit tests
+Exposes a crud interface for shots, methods to draw and clear the court and symbols, and utilities.
 
-Run `ng test ngx-shot-chart` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Usage:
 
-## Further help
+```typescript
+import { ShotChartService } from 'ngx-shot-chart';
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+constructor(private shotChartService: ShotChartService) {}
+
+// Add a shot to the chart whenever it is clicked 🪣
+handleChartClick(event: ChartClickedEvent) {
+  this.chart.AddShot(event, d3.symbolCircle);
+}
+
+// Remove a shot from the chart whenever the symbol is clicked 🗑️
+handleSymbolClick(event: SymbolClickEvent) {
+  this.chart.RemoveShot(event.id);
+}
+```
