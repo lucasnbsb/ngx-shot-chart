@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "deploy": "ng deploy --project=ngx-shot-chart-demo --base-href=/ngx-shot-chart/",
     "test": "ng test"
   },
   "private": true,
