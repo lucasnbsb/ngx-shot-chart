@@ -6,7 +6,6 @@ import * as d3 from 'd3';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   IChartClickedEvent,
-  IShotInfo,
   ISymbolParameters,
   NgxShotChartComponent,
   NgxShotChartLeague,
