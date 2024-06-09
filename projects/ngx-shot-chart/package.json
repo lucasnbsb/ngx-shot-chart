@@ -1,4 +1,5 @@
 {
+  "version": "0.0.4",
   "name": "ngx-shot-chart",
   "description": "An Angular component to create basketball shot charts in real time",
   "homepage": "https://lucasnbsb.github.io/ngx-shot-chart/",
@@ -13,7 +14,6 @@
     "d3.js",
     "Basketball"
   ],
-  "version": "0.0.3",
   "peerDependencies": {
     "@angular/common": "^17.3.0",
     "@angular/core": "^17.3.0",
